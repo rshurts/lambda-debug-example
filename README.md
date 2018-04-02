@@ -1,6 +1,6 @@
 # Lambda Debug Example
 
-See Blog.md for detailed instructions.
+See [Blog.md](./Blog.md) for detailed instructions.
 
 
 ## Prerequisites

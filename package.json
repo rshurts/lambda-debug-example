@@ -1,0 +1,29 @@
+{
+  "name": "lambda-debug-example",
+  "version": "0.0.1",
+  "description": "debug lambda example",
+  "repository": "github:rshurts/lambda-debug-example",
+  "scripts": {
+    "lint": "eslint '**/*.js'",
+    "pretty": "eslint --fix '**/*.js'"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "aws-sdk": "^2.212.1",
+    "bluebird": "^3.5.1",
+    "co": "^4.6.0",
+    "serverless-pseudo-parameters": "^1.4.2"
+  },
+  "devDependencies": {
+    "eslint": "^4.18.1",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-config-prettier": "^2.9.0",
+    "eslint-plugin-import": "^2.9.0",
+    "eslint-plugin-prettier": "^2.6.0",
+    "eslint-plugin-promise": "^3.6.0",
+    "prettier": "^1.10.2",
+    "serverless": "^1.26.1",
+    "serverless-sam": "0.0.5"
+  }
+}

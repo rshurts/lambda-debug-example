@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: 'SAM template for Serverless framework service: '
+Resources:
+  lotrTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: lotr
+      AttributeDefinitions:
+        - AttributeName: name
+          AttributeType: S
+      KeySchema:
+        - AttributeName: name
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+  FindCharactersByTag:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: functions/findCharactersByTag.handler
+      Runtime: nodejs6.10
+      CodeUri: >-
+        /Users/Russell/Code/Serverless/lambda-debug-example/.serverless/lambda-debug-example.zip
+      MemorySize: 128
+      Timeout: 3
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action: 'dynamodb:scan'
+              Resource: 'arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/lotr'
+      Environment:
+        Variables:
+          LOTR_TABLE: lotr
+      Events:
+        Event1:
+          Type: Api
+          Properties:
+            Path: /lotr/search
+            Method: post
+            RestApiId:
+              Ref: LambdaDebugExample
+  LambdaDebugExample:
+    Type: 'AWS::Serverless::Api'
+    Properties:
+      StageName: dev
+      DefinitionBody:
+        swagger: '2.0'
+        info:
+          title:
+            Ref: 'AWS::StackName'
+        paths:
+          /lotr/search:
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  'Fn::Sub': >-
+                    arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FindCharactersByTag.Arn}/invocations
+              responses: {}
+  FindCharactersByTagLambdaPermission:
+    Type: 'AWS::Lambda::Permission'
+    DependsOn:
+      - FindCharactersByTag
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName:
+        Ref: FindCharactersByTag
+      Principal: apigateway.amazonaws.com

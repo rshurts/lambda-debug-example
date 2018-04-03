@@ -118,7 +118,7 @@ To begin debugging, set some breakpoints and perform the following steps:
 
 1. In a terminal run `sam local invoke -e examples/findCharactersByTag.json -d 9229`
 1. Create an **Attach to Node.js/Chrome** configuration and name it _Attach to SAM Local_. 
-1. Make sure the port in the configurations matches used in the command line `-d` paramter.
+1. Make sure the port in the configurations matches used in the command line `-d` parameter.
 1. Select _Attach to SAM Local_ from the configurations select box.
 1. Click the **Debug** button.
 1. Use the debugger buttons to step through the breakpoints.

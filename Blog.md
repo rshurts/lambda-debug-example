@@ -1,26 +1,27 @@
-# Debug Your Lambda's Locally
 
-Serverless architecture opens an exciting new space for building cloud native and event-driven applications. By going serverless development teams focus on business logic and delivering value while the cloud takes care of the rest. But this new approach raises new questions. When all the infrastructure is run on the cloud and tied to cloud managed services, how does one have a productive local development environment? Can you even run serverless functions locally, let alone debug them?
+# Locally Debug Your Serverless Lambda Function
 
-Fortunately, a number of new techniques exist to make working with serverless functions painless and productive. We'll use Node.js and AWS Lambda to demonstrate a couple ways of invoking and debugging functions locally. After following this guide, you'll have the confidence to start writing Lambda's of your own.
+Serverless architecture opens an exciting new space for building cloud native and event-driven applications. By going serverless development teams focus on business logic while leveraging managed services. But this new approach raises new questions. When all the infrastructure is on the cloud, how do you have a productive local development environment? Can you even run serverless functions locally, let alone debug them?
 
-I'll be using an example application to show how to run and debug an AWS Lambda function locally. The application is a single function backed by a dataset of Lord of the Rings characters in DynamoDB. The function searchs the database for characters with a given trait, like "fellowship," and returns the matching characters as a JSON response. This creates a dependency on DynamoDB, so even when running locally, we will be connecting to DynamoDB to do the table scan.
+Fortunately, a number of techniques exist to make working with serverless functions painless and productive. We'll use Node.js and AWS Lambda to demonstrate a couple ways of invoking and debugging functions locally. After following this guide, you'll have the confidence to start debugging Lambda's of your own.
+
+I'll use an example application to show how to run and debug an AWS Lambda function locally. The application is a single function backed by a dataset of Lord of the Rings characters in DynamoDB. The function searches the database for characters with a given trait, like "fellowship," and returns the matching characters as JSON. This creates a dependency on DynamoDB, so even when running locally, we will be connecting to DynamoDB to do the table scan.
 
 To demonstrate debugging, I'll be providing the setup for two popular IDEs/editors: [Microsoft Visual Studio Code](https://code.visualstudio.com/) and [JetBrain's Webstorm](https://www.jetbrains.com/webstorm/).
 
-> **Tip** If you'd like to follow along, clone this git repo http://github.com/rshurts/lambda-debug-example and follow the instructions in the README.md.
+> **Tip** If you'd like to follow along, clone this git repo http://github.com/rshurts/lambda-debug-example, follow the instructions in the README.md, and return to the blog.
 
 ## Serverless Framework
 
-My go to framework for creating Lambda functions is the [Serverless Framework](https://serverless.com/). The framework allows for easy management of the entire lifecycle of the Lambda and can even standup required services using Cloud Formation. I strongly recommend it if you are looking to build your own serverless application.
+My go to framework for creating Lambda functions is the [Serverless Framework](https://serverless.com/). Serverless manages the entire lifecycle of the Lambda and can even deploy required services using Cloud Formation. Check it out if you are looking to build your own serverless application.
 
-But here, we're going to take advantage of the fact that the Serverless Framework can invoke the function locally and use that invocation to setup local debugging. To invoke the Lambda locally, use the following command, where `-f` identifies the function name and `-p` is the path to the request payload:
+Here we're going to take advantage of the fact that the Serverless Framework can invoke functions locally. And use that invocation to setup local debugging. Use the following command, where `-f` identifies the function name and `-p` is the path to the request payload:
 
 ```
 sls invoke local -f findCharactersByTag -p examples/findCharactersByTag.json
 ```
 
-Normally when a Lambda runs it assumes the IAM roles provided to it. However, when Serverless invokes the function locally it uses your default AWS profile. Just be aware of this if your default profile points to a different account or doesn't have the permissions needed.
+Normally when a Lambda runs it assumes an IAM role. However, when Serverless invokes the function locally it uses your default AWS profile. Meaning it isn't an exact simulation of AWS. Read more about the difference in the [Serverless docs](https://serverless.com/framework/docs/providers/aws/cli-reference/invoke-local#resource-permissions).
 
 ### Visual Studio Code and Serverless
 
@@ -28,23 +29,23 @@ Visual Studio Code manages debugging through launch configurations. Open the Deb
 
 ```json
 {
-  "version": "0.2.0",
-  "configurations": [
+ "version": "0.2.0",
+ "configurations": [
     {
-      "type": "node",
-      "request": "launch",
-      "name": "findCharactersByTag",
-      "program": "${workspaceFolder}/node_modules/.bin/sls",
-      "args": [
-        "invoke",
-        "local",
-        "-f",
-        "findCharactersByTag",
-        "-p",
-        "examples/findCharactersByTag.json"
+ "type": "node",
+ "request": "launch",
+ "name": "findCharactersByTag",
+ "program": "${workspaceFolder}/node_modules/.bin/sls",
+ "args": [
+ "invoke",
+ "local",
+ "-f",
+ "findCharactersByTag",
+ "-p",
+ "examples/findCharactersByTag.json"
       ],
-      "env": {
-        "LOTR_TABLE": "lotr"
+ "env": {
+ "LOTR_TABLE": "lotr"
       }
     }
   ]
@@ -57,7 +58,7 @@ To begin debugging, set some breakpoints and perform the following steps:
 1. Click the **Start Debugging** button.
 1. Use the debugger buttons to step through the breakpoints.
 
-> **Tip** You will need one launch configuration per function, so add a new node launch object for each function and change the name, args, and environment variables as necessary.
+> **Tip** You need one launch configuration per function. Add a new node launch object for each function and update the name, args, and environment variables.
 
 ### Webstorm and Serverless
 
@@ -71,9 +72,9 @@ To begin debugging, set some breakpoints and perform the following steps:
 
 ## AWS SAM Local
 
-Another option for running Lamdba's locally is [AWS SAM Local](https://github.com/awslabs/aws-sam-local). Introduced just prior to the 2017 re:Invent, SAM Local is built upon the AWS Serverless Application Model (SAM) and is currently in beta.
+Another option for executing Lamdba's locally is [AWS SAM Local](https://github.com/awslabs/aws-sam-local). Introduced prior to the 2017 re:Invent, SAM Local built upon the AWS Serverless Application Model (SAM) and is currently in beta.
 
-SAM Local is a CLI tool installed via NPM and requires docker installed and running. SAM requires `template.yml` to understand how to run your function.
+SAM Local is a CLI tool installed via NPM and requires docker installed and running. SAM requires a `template.yml` to understand how to run your function. I used [Serverless SAM](https://github.com/SAPessi/serverless-sam) to convert my serverless.yml into a template.yml, but you can also follow the samples in the [AWS SAM Local repo](https://github.com/awslabs/aws-sam-local/tree/develop/samples) to create a template from scratch.
 
 To run SAM Local with debugging execute the following command, where `-e` is the path to the example request and `-d` is the debug port.
 
@@ -81,7 +82,7 @@ To run SAM Local with debugging execute the following command, where `-e` is the
 sam local invoke -e examples/findCharactersByTag.json -d 9229
 ```
 
-Just make sure to detach your debugger to send the result back to SAM Local.
+Make sure to detach your debugger to send the result back to SAM Local.
 
 ### Visual Studio Code and SAM Local
 
@@ -89,17 +90,17 @@ Open the Debug panel and create a new Node.js launch configuration and add the f
 
 ```json
 {
-  "version": "0.2.0",
-  "configurations": [
+ "version": "0.2.0",
+ "configurations": [
     {
-      "type": "node",
-      "request": "attach",
-      "name": "Attach to SAM Local",
-      "address": "localhost",
-      "port": 9229,
-      "localRoot": "${workspaceRoot}",
-      "remoteRoot": "/var/task",
-      "protocol": "inspector"
+ "type": "node",
+ "request": "attach",
+ "name": "Attach to SAM Local",
+ "address": "localhost",
+ "port": 9229,
+ "localRoot": "${workspaceRoot}",
+ "remoteRoot": "/var/task",
+ "protocol": "inspector"
     }
   ]
 }
@@ -117,16 +118,15 @@ To begin debugging, set some breakpoints and perform the following steps:
 
 1. In a terminal run `sam local invoke -e examples/findCharactersByTag.json -d 9229`
 1. Create an **Attach to Node.js/Chrome** configuration and name it _Attach to SAM Local_. 
-1. Make sure the port in the configurations matches what was used in the command line `-d` paramter.
+1. Make sure the port in the configurations matches used in the command line `-d` paramter.
 1. Select _Attach to SAM Local_ from the configurations select box.
 1. Click the **Debug** button.
 1. Use the debugger buttons to step through the breakpoints.
 1. Detach the debugger to see the results returned to SAM Local.
 
 
-
 ![WebStorm SAM Local Debug Configuration](/screenshots/WebStorm_SAM_Local_Debug_Configuration.png?raw=true)
 
 ## Conculsion
 
-You now are equipped with two methods of debugging Lambdas while still making use of AWS managed services like DynamoDB. Go confidently tackle your next serverless application!
+You are now equipped with two methods of debugging Lambdas while still using managed services like DynamoDB. Go confidently write your next serverless application!
